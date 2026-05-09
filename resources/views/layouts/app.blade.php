@@ -68,13 +68,11 @@
         @endphp
         <li class="nav-item">
         <a class="nav-link" href="{{ route('driver.availability') }}">My Shift</a>
-        <a class="nav-link" href="{{ route('driver.regions') }}">Regions</a>
         <a class="nav-link" href="{{ route('driver.location.form') }}">Update Location</a>
         <a class="nav-link" href="{{ route('driver.shifts') }}">Shifts</a>
         <a class="nav-link" href="/driver/requests">available requests</a>
         <a class="nav-link" href="/driver/offers">offers you made</a>
         <a class="nav-link" href="/driver/deliveries">deliveries</a>
-        <a class="nav-link" href={{ route("driver.reviews", $driver->id) }}>Reviews</a>
         <a class="nav-link">
         <form action="{{ route('logout') }}" method="POST">
         @csrf

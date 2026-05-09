@@ -57,10 +57,8 @@
                     <label>Username</label>
                     <input type="text" name="user_name" value="{{ $client->user_name }}">
 
-                    <label>Premium Level</label>
-                    <input type="text" name="premium_level" value="{{ $client->premium_level }}">
-
                     <button type="submit" class="edit-btn">Save Changes</button>
+                    
                 </form>
             </div>
         </div>

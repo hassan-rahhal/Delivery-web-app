@@ -41,12 +41,19 @@
 
         <div class="form-group">
             <label for="weight_unit">Weight Unit</label>
-            <input type="text" name="weight_unit" class="form-control" value="{{ old('weight_unit', $package->weight_unit) }}" required>
+            <select name="weight_unit" class="form-control" required>
+    <option value="kg" {{ old('weight_unit', $package->weight_unit) == 'kg' ? 'selected' : '' }}>kg</option>
+    <option value="lb" {{ old('weight_unit', $package->weight_unit) == 'lb' ? 'selected' : '' }}>lb</option>
+</select>
         </div>
 
         <div class="form-group">
             <label for="measurement_unit">Measurement Unit</label>
-            <input type="text" name="measurement_unit" class="form-control" value="{{ old('measurement_unit', $package->measurement_unit) }}" required>
+            <select name="measurement_unit" class="form-control" required>
+    <option value="cm" {{ old('measurement_unit', $package->measurement_unit) == 'cm' ? 'selected' : '' }}>cm</option>
+    <option value="m" {{ old('measurement_unit', $package->measurement_unit) == 'm' ? 'selected' : '' }}>m</option>
+    <option value="inch" {{ old('measurement_unit', $package->measurement_unit) == 'inch' ? 'selected' : '' }}>inch</option>
+</select>
         </div>
 
         <div class="form-group">
