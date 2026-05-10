@@ -72,7 +72,7 @@
                         </p>
                     </div>
                     <div class="card-footer bg-transparent border-0">
-                    <a href="{{ route('offers.make', ['id' => $request->id]) }}">Make Offer</a>
+                    <a href="{{ route('offers.make', ['id' => $request->id]) }}" class="btn btn-primary">Make Offer</a>
 
                     </div>
                 </div>

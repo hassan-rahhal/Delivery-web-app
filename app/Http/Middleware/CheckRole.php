@@ -1,43 +1,29 @@
 <?php
 
-
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 
 class CheckRole
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  string  $role  The role to check
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, $role = null)
     {
-        
-        // Check if the user is authenticated
-        if (!Auth::check()) {
-           abort(401);
+        if ($role === null) {
+            return $next($request);
         }
 
-        
-        // Get the authenticated user
+        if (!Auth::check()) {
+            return redirect()->route('login')->withErrors('Please login first.');
+        }
+
         $user = Auth::user();
 
-        // Check if the user's role matches the required role
         if ($user->role !== $role) {
-          abort(401);; // Unauthorized if roles don't match
+            return redirect()->route('login')->withErrors('Unauthorized access.');
         }
 
-        // Proceed with the request if authenticated and role matches
         return $next($request);
     }
 }
-
-

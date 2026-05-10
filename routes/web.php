@@ -19,12 +19,13 @@ use App\Http\Controllers\{
     AddressController
 };
 
+// Welcome Page
 Route::get('/', function () {
     return view('WelcomeGuest');
 })->name('welcomePage');
 
+// Auth Routes
 Route::middleware(['web'])->group(function () {
-    // Auth
     Route::get('register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('register', [AuthController::class, 'registerClient'])->name('register-submit');
 
@@ -46,17 +47,13 @@ Route::middleware(['web'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-// Authenticated User Info
-Route::middleware('auth:sanctum')->get('/user', fn(Request $request) => $request->user());
+// Social Login
+Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirectToGoogle']);
+Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
+Route::get('/auth/github', [SocialAuthController::class, 'redirectToGithub'])->name('auth.github');
+Route::get('/auth/callback/github', [SocialAuthController::class, 'handleGithubCallback'])->name('github.callback');
 
-// Packages
-Route::resource('packages', PackageController::class);
-
-// Deliveries
-
-Route::get('/deliveries/admin', [DeliveryController::class, 'adminDeliveries'])->name('admin.deliveries');
-
-// Admin
+// Admin Routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', fn() => view('admin.dashboard'))->name('admin.dashboard');
 
@@ -70,18 +67,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/drivers/export/pdf', [AdminExportController::class, 'exportPDF'])->name('admin.drivers.export.pdf');
 
     // Performance
-    Route::get('/driver-performance', [AdminPerformanceController::class, 'index'])->name('admin.performance.index');
-    Route::get('/driver-performance/{driver}', [AdminPerformanceController::class, 'show'])->name('admin.performance.show');
-    Route::get('/driver-performance/{driver}/pdf', [AdminPerformanceController::class, 'exportPDF'])->name('admin.performance.export.pdf');
+    Route::get('/driver-performance', [AdminPerformanceController::class, 'index'])->name('admin.driver.performance');
+    Route::get('/driver-performance/{driver}', [AdminPerformanceController::class, 'show'])->name('admin.driver.performance.show');
+    Route::get('/driver-performance/{driver}/pdf', [AdminPerformanceController::class, 'exportPDF'])->name('admin.driver.performance.pdf');
 });
 
-// Social Login
-Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirectToGoogle']);
-Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
-Route::get('/auth/github', [SocialAuthController::class, 'redirectToGithub'])->name('auth.github');
-Route::get('/auth/callback/github', [SocialAuthController::class, 'handleGithubCallback'])->name('github.callback');
-
-// Client
+// Client Routes
 Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('client-dashboard', [ClientProfileController::class, 'dashboard'])->name('client-dashboard');
     Route::get('/client/profile/{id}', [ClientProfileController::class, 'show'])->name('client.profile');
@@ -89,70 +80,75 @@ Route::middleware(['auth', 'role:client'])->group(function () {
     Route::put('/client/{id}/update', [ClientProfileController::class, 'update'])->name('client.update');
     Route::post('/client/{id}/social-media', [ClientProfileController::class, 'addSocialMediaAccount'])->name('client.addSocialMediaAccount');
 
+    // Reviews
     Route::get('/deliveries/{id}/review', [ReviewController::class, 'showReview'])->name('reviews.show');
     Route::post('/deliveries/{id}/review', [ReviewController::class, 'store'])->name('reviews.store');
 
+    // Map
     Route::get('/client-map/{clientId}', [ClientMapController::class, 'index']);
     Route::get('/available-drivers/{regionId}/{scheduledTime}', [ClientMapController::class, 'showAvailableDriversForRegionAndTime'])->name('available.drivers');
-    // Deliveries user route (for redirect)
+
+    // Deliveries
     Route::get('/deliveries/user', [DeliveryController::class, 'userDeliveries'])->name('deliveries.user');
-    Route::get('/client-map/{clientId}', [ClientMapController::class, 'index']);
-    Route::get('/available-drivers/{regionId}/{scheduledTime}', [ClientMapController::class, 'showAvailableDriversForRegionAndTime'])->name('available.drivers');
-    Route::get('/deliveries/user', [DeliveryController::class, 'userDeliveries'])->name('user.deliveries');
+
     // Payment
-Route::get('/stripe', [StripePaymentController::class, 'stripe'])->name('stripe');
-Route::post('/stripe', [StripePaymentController::class, 'stripePost'])->name('stripe.post');
-Route::get('/pay/delivery/{delivery_id}', [StripePaymentController::class, 'stripe'])->name('pay.delivery');
-Route::post('/pay/delivery/{delivery_id}', [StripePaymentController::class, 'stripePost'])->name('pay.delivery.post');
-Route::get('/requests', [FindDriverRequestController::class, 'index'])->name('requests.index');
-Route::get('/requests/create/{package_id}', [FindDriverRequestController::class, 'create'])->name('requests.create');
-Route::post('/requests', [FindDriverRequestController::class, 'store'])->name('requests.store');
-Route::get('/requests/{id}/offers', [FindDriverRequestController::class, 'showOffers'])->name('requests.offers');
-Route::post('/accept-offer/{offer}', [FindDriverRequestController::class, 'acceptOffer'])->name('acceptOffer');
-Route::delete('/requests/{id}', [FindDriverRequestController::class, 'destroy'])->name('requests.destroy');
-Route::get('/deliveries/user', [DeliveryController::class, 'userDeliveries'])->name('user.deliveries');
-Route::get('/deliveries/user', [DeliveryController::class, 'userDeliveries'])->name('deliveries.user');
+    Route::get('/stripe', [StripePaymentController::class, 'stripe'])->name('stripe');
+    Route::post('/stripe', [StripePaymentController::class, 'stripePost'])->name('stripe.post');
+    Route::get('/pay/delivery/{delivery_id}', [StripePaymentController::class, 'stripe'])->name('pay.delivery');
+    Route::post('/pay/delivery/{delivery_id}', [StripePaymentController::class, 'stripePost'])->name('pay.delivery.post');
+
+    // Requests
+    Route::get('/requests', [FindDriverRequestController::class, 'index'])->name('requests.index');
+    Route::get('/requests/create/{package_id}', [FindDriverRequestController::class, 'create'])->name('requests.create');
+    Route::post('/requests', [FindDriverRequestController::class, 'store'])->name('requests.store');
+    Route::get('/requests/{id}/offers', [FindDriverRequestController::class, 'showOffers'])->name('requests.offers');
+    Route::post('/accept-offer/{offer}', [FindDriverRequestController::class, 'acceptOffer'])->name('acceptOffer');
+    Route::delete('/requests/{id}', [FindDriverRequestController::class, 'destroy'])->name('requests.destroy');
+
+    // Packages
+    Route::resource('packages', PackageController::class);
+
+    // Addresses
+    Route::resource('addresses', AddressController::class);
 });
 
-// Driver
+// Driver Routes
 Route::middleware(['auth', 'role:driver'])->group(function () {
     Route::get('driver-dashboard', [DriverController::class, 'dashboard'])->name('driver-dashboard');
-    Route::resource('drivers', DriverController::class);
-    Route::get('/reviews/{id}', [ReviewController::class, 'showDriverReviews'])->name('driver.reviews');
-    Route::get('/driver/requests', [DriverOfferController::class, 'showAvailableRequestsForDriver'])
-        ->name('driver.requests');
-    Route::post('/driver/delivery/{deliveryId}/update-status', [DeliveryController::class, 'updateStatus'])
-        ->name('driver.updateStatus');
+
+    // Deliveries
     Route::get('/driver/deliveries', [DeliveryController::class, 'driverDeliveries'])->name('driver.deliveries');
-    // Driver Scheduling
+    Route::post('/driver/delivery/{deliveryId}/update-status', [DeliveryController::class, 'updateStatus'])->name('driver.updateStatus');
+
+    // Requests & Offers
+    Route::get('/driver/requests', [DriverOfferController::class, 'showAvailableRequestsForDriver'])->name('driver.requests');
+    Route::get('/driver/requests/{id}/offer', [DriverOfferController::class, 'makeOffer'])->name('offers.make');
+    Route::post('/driver/offers/create', [DriverOfferController::class, 'createOffer'])->name('driver.offers.create');
+    Route::get('/driver/offers', [DriverOfferController::class, 'listOffers'])->name('driver.offers.list');
+
+    // Scheduling
     Route::get('availability', [DriverController::class, 'availabilityPage'])->name('driver.availability');
     Route::get('regions', [DriverController::class, 'regionsPage'])->name('driver.regions');
     Route::get('shifts', [DriverController::class, 'shiftsPage'])->name('driver.shifts');
     Route::put('/driver/{id}/shift', [DriverController::class, 'CreateShift'])->name('driver.CreateShift');
     Route::put('/driver/{id}/availability', [DriverController::class, 'updateAvailability'])->name('driver.updateAvailability');
-    Route::put('shifts', [DriverController::class, 'updateShifts'])->name('driver.update.shifts');
-    Route::put('{region', [DriverController::class, 'updateRegion'])
-        ->name('driver.update.region');
-    Route::get('/deliveries/driver', [DeliveryController::class, 'driverDeliveries'])->name('driver.deliveries');
-    Route::post('/driver/delivery/{deliveryId}/update-status', [DeliveryController::class, 'updateStatus'])->name('driver.updateStatus');
-    Route::get('/driver/requests', [DriverOfferController::class, 'availableRequests'])->name('driver.requests');
-Route::get('/driver/requests/{id}/offer', [DriverOfferController::class, 'makeOffer'])->name('offers.make');
-Route::post('/driver/offers', [DriverOfferController::class, 'store'])->name('offers.store');
-Route::get('/driver/offers', [DriverOfferController::class, 'listOffers'])->name('driver.offers.list');
-Route::post('/driver/offers/create', [DriverOfferController::class, 'createOffer'])->name('driver.offers.create');
-Route::get('/driver/requests', [DriverOfferController::class, 'showAvailableRequestsForDriver'])
-        ->name('driver.requests');
+    Route::put('/driver/{id}/region', [DriverController::class, 'updateRegion'])->name('driver.update.region');
+
+    // Reviews
+    Route::get('/reviews/{id}', [ReviewController::class, 'showDriverReviews'])->name('driver.reviews');
+
+    // Drivers resource
+    Route::resource('drivers', DriverController::class);
 });
-
-
-
-// Address
-Route::resource('addresses', AddressController::class);
-
-
 
 // Location Update
 Route::middleware(['auth'])->group(function () {
     Route::get('/driver/update-location', [DriverController::class, 'showLocationUpdateForm'])->name('driver.location.form');
     Route::post('/update-driver-location', [DriverController::class, 'updateLocation'])->name('driver.location.update');
 });
+
+// Admin Deliveries
+Route::get('/deliveries/admin', [DeliveryController::class, 'adminDeliveries'])->name('admin.deliveries');
+
+// Authenticated User Info
+Route::middleware('auth:sanctum')->get('/user', fn(Request $request) => $request->user());

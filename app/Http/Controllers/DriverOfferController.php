@@ -15,60 +15,25 @@ class DriverOfferController extends Controller
      * Show all available requests that match the logged-in driver's availability and regions.
      */
     public function showAvailableRequestsForDriver()
-    {
-        // Get the authenticated user
-        $user = Auth::user();
+{
+    $user = Auth::user();
+    $driver = Driver::where('user_id', $user->id)->first();
 
-        // Find the driver associated with the logged-in user
-        $driver = Driver::where('user_id', $user->id)->first();
-
-        if (!$driver) {
-            // Driver profile not found; redirect or handle error
-            return redirect()->route('login')->withErrors('Driver profile not found.');
-        }
-
-        $driverId = $driver->id;
-
-        // Get all availabilities for this driver
-        $availabilities = Availability::with(['getShiftAvailability', 'getRegionAvailability'])
-            ->where('drivers_id', $driverId)
-            ->get();
-
-        $matchingRequests = collect();
-
-        foreach ($availabilities as $availability) {
-            $shift = $availability->getShiftAvailability;
-            $regions = $availability->getRegionAvailability;
-
-            if (!$shift) {
-                continue;
-            }
-
-            $start = $shift->starting_time;
-            $end = $shift->end_time;
-
-            foreach ($regions as $region) {
-                $requests = FindDriverRequest::with(['takeofAddress', 'dropoffAddress'])
-                    ->whereHas('takeofAddress', function ($query) use ($region) {
-                        $query->whereHas('region', function ($query2) use ($region) {
-                            $query2->where('id', $region->id);
-                        });
-                    })
-                    ->whereBetween('scheduled_at', [$start, $end])
-                    ->get();
-
-                $matchingRequests = $matchingRequests->merge($requests);
-            }
-        }
-
-        // Remove duplicate requests by id
-        $uniqueRequests = $matchingRequests->unique('id');
-
-        // Return the view with the requests for the logged-in driver
-        return view('drivers.requests', [
-            'requests' => $uniqueRequests
-        ]);
+    if (!$driver) {
+        return redirect()->route('login')->withErrors('Driver profile not found.');
     }
+
+    // Get ALL requests regardless of shift or region
+    $requests = FindDriverRequest::with([
+        'package.client',
+        'takeofAddress.region',
+        'dropoffAddress.region'
+    ])->get();
+
+    return view('drivers.requests', [
+        'requests' => $requests
+    ]);
+}
 
     /**
      * Example method to create a new offer for a delivery request.

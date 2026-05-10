@@ -24,17 +24,17 @@ class PackageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image',
-            'height' => 'required|numeric',
-            'width' => 'required|numeric',
-            'depth' => 'required|numeric',
-            'weight' => 'required|numeric',
-            'weight_unit' => 'required|string',
-            'measurement_unit' => 'required|string',
-            'is_breakable' => 'nullable|boolean',
-            'is_flammable' => 'nullable|boolean',
-            'has_fluid' => 'nullable|boolean',
-        ]);
+        'image' => 'required|image',
+        'height' => 'required|numeric|min:0.01',
+        'width' => 'required|numeric|min:0.01',
+        'depth' => 'required|numeric|min:0.01',
+        'weight' => 'required|numeric|min:0.01',
+        'weight_unit' => 'required|string',
+        'measurement_unit' => 'required|string',
+        'is_breakable' => 'nullable|boolean',
+        'is_flammable' => 'nullable|boolean',
+        'has_fluid' => 'nullable|boolean',
+    ]);
 
         // Get the authenticated client
         $client = Auth::user()->client;

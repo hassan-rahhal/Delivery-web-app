@@ -197,10 +197,10 @@ class AuthController extends Controller
     
             // Redirect based on role
             return match ($user->role) {
-                'admin' => redirect()->route('admin-dashboard'),
-                'client' => redirect()->route('client-dashboard'),
-                'driver' => redirect()->route('driver-dashboard'),
-            };
+    'admin' => redirect()->route('admin.dashboard'),
+    'client' => redirect()->route('client-dashboard'),
+    'driver' => redirect()->route('driver-dashboard'),
+};
         }
     
         // If login failed
